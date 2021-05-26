@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>我的店页面</title>
+    <link rel="stylesheet" type="text/css" href="../../static/css/style.css">
+    <script type="text/javascript" src=../../static/script/jquery-1.7.2.js></script>
+    <script type="text/javascript">
+        $(function (){
+            //获取当前页面的url
+            let urlinfo=window.location.href;
+            let userId = GetArgsFromHref(urlinfo,"userId")
+            $.getJSON("http://localhost:8080/NewMcDonald/ajax/pages/manager/gotoMyStore?userId="+userId,function(data){
+                if(data.result) {
+                    $.each(data,function (n,value){
+                        for (let i = 0; i < value.length; i++) {
+                            let $tr = $('<tr></tr>')
+                            $(".main_table").append($tr)
+                            $tr.append("<td>"+value[i].storeName+"</td>")
+                                .append("<td>"+value[i].city+"</td>")
+                                .append("<td>"+value[i].description + "</td>")
+                                .append('<td><a href="store_edit.html?storeId=' +value[i].id+'&userId='+value[i].userId+'">修改</a></td>')
+                                .append('<td><a href="http://localhost:8080/NewMcDonald/ajax/pages/manager/deleteStore?storeId='+value[i].id+'" class="deleteStore">删除</a></td>')
+                                .append('<td><a href="manager_item.html?storeId='+value[i].id+'&pageNo=1">管理我的店</a></td>')
+                        }
+                    })
+                } else {
+                    $(".error").css("color","red").html("你还没有店")
+                }
+
+            })
+
+            /*给动态增加的标签绑定单击事件*/
+            $(".main_table").on("click",".deleteStore",function (){
+                return confirm("你确定要删除?");
+            })
+            /*返回首页*/
+            $(".gotoLoginSuccess").attr('href',"http://localhost:8080/NewMcDonald/ajax/pages/user/gotoLoginSuccess?userId="+userId)
+            //增加店
+            $(".addStore").attr('href',"store_edit.html?userId="+userId)
+
+
+
+            function GetArgsFromHref(sHref, sArgName) {
+                var args = sHref.split("?");
+                var retval = "";
+                /*参数为空*/
+                if(args[0] == sHref) {
+                    /*无需做任何处理*/
+                    return retval;
+                }
+                var str = args[1];
+                args = str.split("&");
+                for(var i = 0; i < args.length; i ++) {
+                    str = args[i];
+                    var arg = str.split("=");
+                    if(arg.length <= 1) continue;
+                    if(arg[0] == sArgName) {
+                        retval = arg[1];
+                    }
+                }
+                return retval;
+            }
+        })
+    </script>
+</head>
+<body>
+
+    <h2 >我的店</h2>
+
+    <ul>
+        <li><a  class="addStore" href="">增加店铺</a></li>
+        <li><a class="gotoLoginSuccess" href="">返回首页</a></li>
+    </ul>
+    <div class="error">
+
+    </div>
+
+    <table align="center" class="main_table" style="width: auto">
+        <tr class="store_message">
+            <td  class="storeName">店名：</td>
+            <td class="city">城市：</td>
+            <td class="description">描述：</td>
+            <td>操作：</td>
+        </tr>
+
+    </table>
+
+</body>
+</html>

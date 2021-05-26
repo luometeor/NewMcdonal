@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>店长选择进入店然后查看订单</title>
+    <link rel="stylesheet" type="text/css" href="../../static/css/style.css">
+    <script type="text/javascript" src=../../static/script/jquery-1.7.2.js></script>
+    <script type="text/javascript">
+        $(function (){
+
+
+            //获取当前页面的url
+            let urlInfo=window.location.href;
+            //获取url的长度
+            let len=urlInfo.length;
+            //设置参数值开始的位置，这个只适用与传一个参数
+            let offset=urlInfo.indexOf("=");
+            //取出参数值
+            let userId=urlInfo.substr(offset+1,len);
+
+            $.getJSON("http://localhost:8080/NewMcDonald/ajax/pages/order/show_my_store?userId="+userId,function (data){
+                if(data.result) {
+                    for (let i = 0; i < data.stores.length; i++) {
+                        let $tr = $("<tr></tr>")
+                        $(".main_table").append($tr);
+                        $tr.append("<td>"+data.stores[i].storeName+"</td>")
+                            .append("<td>"+data.stores[i].city+"</td>")
+                            .append("<td>"+data.stores[i].description+"</td>")
+                            .append("<td><a href='sell_order.html?storeId="+data.stores[i].id+"&userId="+userId+"&type=no_sell'>查看订单</a></td>")
+                    }
+                } else {
+                    $(".error").css("color","red").html("您还没有开店");
+                }
+            })
+
+
+            $(".gotoLoginSuccess").attr('href',"http://localhost:8080/NewMcDonald/ajax/pages/user/gotoLoginSuccess?userId="+userId)
+
+        })
+    </script>
+</head>
+<body>
+
+    <ul>
+        <li><a href='' class="gotoLoginSuccess">返回主页</a></li>
+    </ul>
+    <div class="error">
+
+    </div>
+    <table style="width: auto" border="1px" class="main_table" align="center">
+
+        <tr>
+            <td>名称</td>
+            <td>城市</td>
+            <td>描述</td>
+            <td>操作</td>
+        </tr>
+    </table>
+</body>
+</html>

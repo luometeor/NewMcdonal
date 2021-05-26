@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>修改/增加商品信息</title>
+    <link rel="stylesheet" type="text/css" href="../../static/css/style.css">
+    <script type="text/javascript" src=../../static/script/jquery-1.7.2.js></script>
+    <script type="text/javascript">
+        $(function (){
+            let urlInfo=window.location.href;
+
+            let storeId = GetArgsFromHref(urlInfo,"storeId");
+            /*用于修改*/
+            let itemId = GetArgsFromHref(urlInfo,"itemId");
+            let pageNo = GetArgsFromHref(urlInfo,"pageNo")
+            $(".div_menu").change(function (){
+                let $div = $("<div></div>")
+                /*清空*/
+                $(".item_menu").empty()
+                               .append($div);
+                if($("input[name='together']:checked").val() == "true") {
+                    $div.append("<span>套餐价格：<input type='text' class='price' name='price'></span>")
+                } else {
+                    $div.append("<span>大份价格：<input type='text' class='big_price' name='bigPrice'></span>")
+                       .append("<span>中份价格:<input type='text' class='mid_price' name='midPrice'></span>")
+                       .append("<span>小份价格：<input type='text' class='small_price' name='smallPrice'></span>")
+                }
+            })
+
+            $(".submit").click(function () {
+                let itemName = $(".item_name").val();
+                let hot = $("input[name='hot']:checked").val();
+                let cool = $("input[name='cool']:checked").val();
+                let filePath = $(".updateFile").val();
+                let smallPrice = $(".small_price").val();
+                let price = $(".price").val();
+                let midPrice = $(".mid_price").val();
+                let bigPrice = $(".big_price").val();
+
+                if(!itemName.length || !hot.length || !cool.length || !filePath.length || (price != null &&!price.length)
+                   || (midPrice !=null && !midPrice.length) || (smallPrice!=null&& !smallPrice.length) || (bigPrice!=null &&!bigPrice.length)) {
+                    $(".error").css("color","red").html("以上内容不能为空")
+                    return false;
+                }
+            })
+            //修改的
+            if(itemId.length) {
+                $(".items_form").attr('action',"http://localhost:8080/NewMcDonald/ajax/pages/item/updateItem?itemId="+itemId+"&pageNo="+pageNo+"&storeId="+storeId)
+            } else {
+                $(".items_form").attr('action',"http://localhost:8080/NewMcDonald/ajax/pages/item/addItem?storeId="+storeId+"&pageNo="+pageNo)
+            }
+
+            function GetArgsFromHref(sHref, sArgName) {
+                var args = sHref.split("?");
+                var retval = "";
+                /*参数为空*/
+                if(args[0] == sHref) {
+                    /*无需做任何处理*/
+                    return retval;
+                }
+                var str = args[1];
+                args = str.split("&");
+                for(var i = 0; i < args.length; i ++) {
+                    str = args[i];
+                    var arg = str.split("=");
+                    if(arg.length <= 1) continue;
+                    if(arg[0] == sArgName) {
+                        retval = arg[1];
+                    }
+                }
+                return retval;
+            }
+        })
+    </script>
+</head>
+
+<body>
+<form action=""
+      enctype="multipart/form-data" method="post" class="items_form">
+        <div>
+            <span>
+                商品名称:<input type="text" class="item_name" name="itemName">
+            </span>
+        </div>
+        <div>
+            <span>
+                是否要有加冰属性<input type="radio" value="true" class="cool" name="cool">YES
+                <input type="radio" value="false" class="cool" name="cool">NO
+            </span>
+        </div>
+        <div>
+            <span>
+                是否要有加辣属性<input type="radio" value="true" class="hot" name="hot">YES
+                <input type="radio" value="false" class="hot" name="hot">NO
+            </span>
+        </div>
+        <div class="div_menu">
+            <span>
+                是否为套餐<input type="radio" value="true" class="together" name="together"/>YES
+                         <input type="radio" value="false" class="together" name="together">NO
+            </span>
+        </div>
+        <div class="item_menu" >
+
+        </div>
+        <div>
+            <span>
+                <input type="file" class="updateFile" name="imgPath">
+            </span>
+
+        </div>
+        <div>
+            <span>
+                <input type="submit" value="提交" class="submit">
+            </span>
+            <span class="error">
+
+                </span>
+        </div>
+</form>
+</body>
+</html>

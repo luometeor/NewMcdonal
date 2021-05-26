@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>菜单</title>
+    <link rel="stylesheet"  type="text/css"  href="../../static/css/style.css">
+    <script type="text/javascript" src=../../static/script/jquery-1.7.2.js></script>
+    <style type="text/css">
+        .items_list{
+            display: flex;
+            width: 1600px;
+            height: 500px;
+            background: black;
+            justify-content: center; //水平居中
+            align-items: center;    //垂直居中
+
+        }
+        .childDiv {
+            width: auto;
+            height: auto;
+            background: white;
+        }
+    </style>
+    <script type="text/javascript">
+        $(function () {
+            let urlInfo=window.location.href;
+            let storeId = GetArgsFromHref(urlInfo,"storeId");
+            let pageNo = GetArgsFromHref(urlInfo,"pageNo")
+            let userId = GetArgsFromHref(urlInfo,"userId")
+
+            $.getJSON("http://localhost:8080/NewMcDonald/ajax/pages/item/entryStore?storeId="+storeId+"&pageNo="+pageNo,function (data){
+                if(!data.result) {
+                    $(".items_list").css("color","red").html("这个店还没有商品噢，亲")
+                } else {
+                    $.each(data,function (n,value) {
+                        for (let i = 0; i <value.items.length; i++) {
+                            $div = $("<div class='childDiv' id='"+ i +"'></div>");
+                            $(".items_list").append($div);
+                            $div.append("<div><img src='../../"+value.items[i].items.imgPath+"' width='400px' height='400px'></div>")
+                                .append("<div>"+ "名称:" +value.items[i].items.itemName+"</div>")
+                            if(value.items[i].priceSizeList.length > 1) {
+                                for (let j = 0; j < value.items[i].priceSizeList.length; j++) {
+                                    $div.append("<div><input type='radio' name='size' class='size' value='"+value.items[i].priceSizeList[j].price+"'>"+ "尺寸:" +value.items[i].priceSizeList[j].size + "价格:"+value.items[i].priceSizeList[j].price+"</div>")
+                                }
+                            } else {
+                                $div.append("<div class='price' >"+"价格:"+value.items[i].priceSizeList[0].price+"</div>")
+                            }
+                            if(value.items[i].items.cool) {
+                                $div.append("<input type='radio' name='cool' class='cool' value='多冰'>多冰")
+                                    .append("<input type='radio' name='cool' class='cool' value='微冰'>微冰")
+                                    .append("<input type='radio' name='cool' class='cool' value='少冰'>少冰")
+                            }
+                            if(value.items[i].items.hot) {
+                                $div.append("<input type='radio' name='hot' class='hot' value='麻辣'>麻辣")
+                                    .append("<input type='radio' name='hot' class='hot' value='微辣'>微辣")
+                                    .append("<input type='radio' name='hot' class='hot' value='不辣'>不辣")
+                            }
+                            $div.append("<button class='addToCart' value='"+i+"'>加入购物车</button>")
+
+
+                            //分页呈现界面
+                            if(i == value.items.length-1) {
+                                $pageButtom = $("<div></div>")
+                                $(".items_list").after($pageButtom);
+                                $pageButtom.append("<a href='items.html?storeId="+storeId+"&pageNo=1&userId="+userId+"'>首页 </a>")
+                                let pageOn = data.productPage.pageNo;
+                                let pageTotal = data.productPage.pageTotal;
+                                let pageTotalCount = data.productPage.pageTotalCount;
+
+                                let begin;
+                                let end;
+                                /*情况一： 一共有3个选项，则当总页码<3时*/
+                                if(pageTotal < 3) {
+                                    begin = 1;
+                                    end = pageTotal;
+                                }
+                                /*情况二：总页码大于3的情况*/
+                                else {
+                                    /*小情况1：当前页码为前面2个：1，2的情况，页码范围是：1-3*/
+                                    if(pageNo < 3 ) {
+                                        begin = 1;
+                                        end = 3;
+                                    } else if(pageOn > pageTotal-2) {
+                                        begin = pageTotal-2;
+                                        end = pageTotal;
+                                    } else {
+                                        begin = pageOn-1;
+
+                                        end = pageOn+1;
+                                    }
+                                }
+                                for ( begin ; begin <= end; begin++) {
+                                    if(pageOn == begin) {
+                                        $pageButtom.append("<span>"+"{"+pageOn+"}"+"</span>")
+                                    } else {
+                                        $pageButtom.append("<a href='items.html?storeId="+storeId+"&pageNo="+begin+"&userId="+userId+"'> "+begin+" </a>")
+                                    }
+                                }
+                                $pageButtom.append("<a href='items.html?storeId="+storeId+"&pageNo="+pageTotal+"&userId="+userId+"'>末页</a>")
+                                    .append("<p>"+'共有 '+pageTotalCount+' 条记录'+"</p>")
+                            }
+
+                        }
+
+                        /*加入购物车*/
+                        $(".items_list").on("click",".addToCart",function (){
+                            let id = $(this).val();
+
+                            var coolOrNot = false;
+                            var hotOrNot = false;
+                            if(value.items[id].items.cool) {
+                                var cool = $("input[name='cool']:checked").val()
+                                if(cool) {
+                                    //取消选中，不然会无法再次识别
+                                    $("input[name='cool']:checked").attr('checked',false)
+                                    coolOrNot = true;
+                                } else {
+                                    $(".message").css("color",'red').html("请选好属性在提交")
+                                    return false;
+                                }
+                            }
+                            if(value.items[id].items.hot) {
+                               var hot = $("input[name='hot']:checked").val()
+                                if(hot) {
+                                    $("input[name='hot']:checked").attr('checked',false)
+                                    hotOrNot = true
+                                } else {
+                                    $(".message").css("color",'red').html("请选好属性在提交")
+                                    return false;
+                                }
+                            }
+
+                            if(value.items[id].priceSizeList.length > 1) {
+                                var price = $("input[name='size']:checked").val()
+                                if(!price) {
+                                    $(".message").css("color",'red').html("请选好属性在提交")
+                                    return false;
+                                }
+                                $("input[name='size']:checked").attr('checked',false)
+                            } else {
+                                price = value.items[id].priceSizeList[0].price;
+                            }
+                            $(".message").css("color",'red').html("")
+                            let url;
+                            if(coolOrNot) {
+                                 url = "http://localhost:8080/NewMcDonald/ajax/pages/cart/addToCart?cartItem.price="+price+"&cartItem.cool="+cool+"&storeId="+storeId+
+                                    "&cartItem.itemName="+value.items[id].items.itemName +"&userId="+userId+"&cartItem.itemId="+value.items[id].items.id
+                            }
+                            else if(hotOrNot) {
+                                 url = "http://localhost:8080/NewMcDonald/ajax/pages/cart/addToCart?cartItem.price="+price+ "&cartItem.hot="+hot+"&storeId="+storeId+
+                                    "&cartItem.itemName="+value.items[id].items.itemName +"&userId="+userId+"&cartItem.itemId="+value.items[id].items.id
+                            } else {
+                                 url = "http://localhost:8080/NewMcDonald/ajax/pages/cart/addToCart?cartItem.price="+price+"&storeId="+storeId+
+                                    "&cartItem.itemName="+value.items[id].items.itemName +"&userId="+userId+"&cartItem.itemId="+value.items[id].items.id
+                            }
+                            $.getJSON(url,function (data) {
+                                if(data.result) {
+                                    $(".message").css("color",'red').html("刚刚把 "+data.itemName+" 加入购物车,购物车一共有："+data.totalCount+"个商品")
+                                } else {
+                                    $(".message").css("color",'red').html("购物车添加失败")
+                                }
+                            })
+                        })
+
+                    })
+
+
+                }
+            })
+
+            $(".gotoLoginSuccess").attr('href',"http://localhost:8080/NewMcDonald/ajax/pages/user/gotoLoginSuccess?userId="+userId);
+            $(".cart").attr('href',"../cart/cart.html?userId="+userId+"&storeId="+storeId)
+
+            function GetArgsFromHref(sHref, sArgName) {
+                var args = sHref.split("?");
+                var retval = "";
+                /*参数为空*/
+                if(args[0] == sHref) {
+                    /*无需做任何处理*/
+                    return retval;
+                }
+                var str = args[1];
+                args = str.split("&");
+                for(var i = 0; i < args.length; i ++) {
+                    str = args[i];
+                    var arg = str.split("=");
+                    if(arg.length <= 1) continue;
+                    if(arg[0] == sArgName) {
+                        retval = arg[1];
+                    }
+                }
+                return retval;
+            }
+
+        })
+    </script>
+</head>
+<body>
+
+    <h2>欢迎来到NewMcDonald</h2>
+
+    <ul>
+        <li><a href="" class="gotoLoginSuccess">回到首页</a></li>
+        <li><a href="" class="cart">我的购物车</a></li>
+    </ul>
+
+    <div class="message" style="font-size: 25px">
+
+    </div>
+
+    <div class="items_list" align="center" >
+
+    </div>
+
+    <div class="page_bottom">
+
+    </div>
+
+</body>
+</html>

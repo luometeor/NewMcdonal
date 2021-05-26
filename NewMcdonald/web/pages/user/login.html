@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>用户登入</title>
+
+    <link rel="stylesheet" type="text/css" href="../../static/css/style.css">
+    <script type="text/javascript" src=../../static/script/jquery-1.7.2.js></script>
+    <script type="text/javascript">
+
+        $(function () {
+            /*提交事件*/
+            $(".login_submit").click(function () {
+                var phoneNumber = $(".phoneNumber").val();
+
+                /*电话的正则表达式*/
+                if (!/^1(3[0-9]|5[0-3,5-9]|7[1-3,5-8]|8[0-9])\d{8}$/.test(phoneNumber)) {
+                    $("#error_message").css("color","red").html("手机号码格式不正确");
+                    return false;
+                } else {
+                    $("#error_message").html("");
+                }
+                /*通过验证才可以发送请求*/
+                $.getJSON("http://localhost:8080/NewMcDonald/ajax/pages/user/login","phoneNumber=" + phoneNumber, function (data) {
+                    if (!data.result) {
+                        $(".loginErrorMessage").css("color", "red").html("还未注册,请先注册")
+                    } else {
+                        location.href = "http://localhost:8080/NewMcDonald/ajax/pages/user/gotoLoginSuccess?phoneNumber=" + phoneNumber
+                    }
+                })
+            });
+
+
+        })
+
+    </script>
+</head>
+<script type="text/javascript" src=../../static/script/jquery-1.7.2.js></script>
+<body>
+
+    <div>
+        <h2 id="login_title">登入</h2>
+        <span><a href="register.html" >立即注册</a></span>
+        <span class="loginErrorMessage"></span>
+    </div>
+
+    <div>
+        <span>
+            手机号码：<input type="text" name="phoneNumber" class="phoneNumber">
+        </span>
+        <span  id="error_message" >
+
+        </span>
+        <br/>
+    </div>
+    <div>
+        <input type="button" value="登入" name="login_submit" class="login_submit" >
+    </div>
+
+
+
+</body>
+</html>

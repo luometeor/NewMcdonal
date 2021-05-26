@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>选择进入那个购物车</title>
+    <link rel="stylesheet"  type="text/css"  href="../../static/css/style.css">
+    <script type="text/javascript" src=../../static/script/jquery-1.7.2.js></script>
+    <script type="text/javascript">
+        $(function (){
+            let url = window.location.href;
+            let userId = GetArgsFromHref(url,"userId");
+
+            $.getJSON("http://localhost:8080/NewMcDonald/ajax/pages/cart/entryCart?userId="+userId,function (data){
+                if(data.result) {
+                    for (let i = 0; i < data.carts.length; i++) {
+                        let $tr = $("<tr></tr>");
+                        $(".main_table").append($tr);
+                        $tr.append($("<td>"+data.storeNames[i]+"</td>"))
+                            .append($("<td>"+data.carts[i].totalPrice+"</td>"))
+                            .append($("<td>"+data.carts[i].totalCount+"</td>"))
+                            .append($("<td><a href='cart.html?userId="+userId+"&storeId="+data.carts[i].storeId+"'>去支付</a></td>"))
+                    }
+                } else{
+                    $(".error").css("color","red").html("购物车空空如也，请先下单先哦亲")
+                }
+            })
+
+            $(".gotoLoginSuccess").attr('href',"http://localhost:8080/NewMcDonald/ajax/pages/user/gotoLoginSuccess?userId="+userId)
+
+            function GetArgsFromHref(sHref, sArgName) {
+                var args = sHref.split("?");
+                var retval = "";
+                /*参数为空*/
+                if(args[0] == sHref) {
+                    /*无需做任何处理*/
+                    return retval;
+                }
+                var str = args[1];
+                args = str.split("&");
+                for(var i = 0; i < args.length; i ++) {
+                    str = args[i];
+                    var arg = str.split("=");
+                    if(arg.length <= 1) continue;
+                    if(arg[0] == sArgName) {
+                        retval = arg[1];
+                    }
+                }
+                return retval;
+            }
+        })
+    </script>
+</head>
+<body>
+    <h2>选择进入购物车</h2>
+    <ul>
+        <li><a href="" class="gotoLoginSuccess">返回首页</a></li>
+    </ul>
+    <div class="error">
+    </div>
+
+    <table class="main_table">
+        <tr>
+            <td>店名</td>
+            <td>总金额</td>
+            <td>总数量</td>
+            <td>操作</td>
+        </tr>
+    </table>
+</body>
+</html>

@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>增加或者修改商信息</title>
+    <link rel="stylesheet" type="text/css" href="../../static/css/style.css">
+    <script type="text/javascript" src=../../static/script/jquery-1.7.2.js></script>
+    <script type="text/javascript">
+        $(function (){
+            //获取当前页面的url
+            urlinfo=window.location.href;
+            storeId = GetArgsFromHref(urlinfo,"storeId");
+            userId = GetArgsFromHref(urlinfo,"userId");
+
+            $(".submit_store").click(function (){
+                var description = $(".description").val();
+                var storeName = $(".storeName").val();
+                var city = $(".city option:checked ").val();
+
+                if(!storeName.length || !description.length || !city.length) {
+                    $(".error").css("color","red").html("上述内容不能为空")
+                } else if(storeId){
+                    $.getJSON("http://localhost:8080/NewMcDonald/ajax/pages/manager/updateStore?store.storeName="+storeName+
+                        "&store.description="+description+"&store.city="+city+"&store.id="+storeId+"&store.userId="+userId,function (data){
+                            if(data.result) {
+                                location.href = "store.html?userId="+userId+"&phoneNumber="+data.phoneNumber;
+                            } else {
+                                alert("程序出错，程序员小哥正在努力修改中")
+                            }
+                    })
+                } else {
+                    $.getJSON("http://localhost:8080/NewMcDonald/ajax/pages/manager/addStore?store.storeName="+storeName+
+                        "&store.description="+description+"&store.city="+city+"&store.userId="+userId,function (data) {
+                            if(data.result) {
+                                location.href = "store.html?userId="+userId;
+                            } else {
+                                alert("程序出错，程序员小哥正在努力修改中")
+                            }
+                    })
+                }
+            })
+
+            function GetArgsFromHref(sHref, sArgName) {
+                var args = sHref.split("?");
+                var retval = "";
+                /*参数为空*/
+                if(args[0] == sHref) {
+                    /*无需做任何处理*/
+                    return retval;
+                }
+                var str = args[1];
+                args = str.split("&");
+                for(var i = 0; i < args.length; i ++) {
+                    str = args[i];
+                    var arg = str.split("=");
+                    if(arg.length <= 1) continue;
+                    if(arg[0] == sArgName) {
+                        retval = arg[1];
+                    }
+                }
+                return retval;
+            }
+
+
+
+        })
+    </script>
+</head>
+<body>
+    <table align="center">
+        <div >店名：<input type="text" name="storeName" class="storeName"></div>
+        <div >城市：<select class="city">
+            <option>广州市</option>
+            <option>梅州市</option>
+            <option>深圳市</option>
+            <option>长沙市</option>
+            <option>岳阳市</option>
+            <option>常德市</option>
+            <option>武汉市</option>
+            <option>黄石市</option>
+            <option>孝感市</option>
+        </select></div>
+        <div>描述：<input type="text" name="description" class="description"></div>
+        <div>
+            <span><input  type="submit" href="" class="submit_store" value="提交"></span>
+            <span class="error"></span>
+        </div>
+    </table>
+
+</body>
+</html>

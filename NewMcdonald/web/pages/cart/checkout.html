@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>小票</title>
+    <link rel="stylesheet"  type="text/css"  href="../../static/css/style.css">
+    <script type="text/javascript" src=../../static/script/jquery-1.7.2.js></script>
+    <script type="text/javascript">
+        $(function (){
+            //获取当前页面的url
+            let urlinfo=window.location.href;
+
+            let orderId=GetArgsFromHref(urlinfo,"orderId")
+            let userId = GetArgsFromHref(urlinfo,"userId")
+            $(".total").html("你的订单已结算，订单号为:"+ orderId);
+            $(".gotoLoginSuccess").attr('href',"http://localhost:8080/NewMcDonald/ajax/pages/user/gotoLoginSuccess?userId="+userId)
+
+
+
+            function GetArgsFromHref(sHref, sArgName) {
+                var args = sHref.split("?");
+                var retval = "";
+                /*参数为空*/
+                if(args[0] == sHref) {
+                    /*无需做任何处理*/
+                    return retval;
+                }
+                var str = args[1];
+                args = str.split("&");
+                for(var i = 0; i < args.length; i ++) {
+                    str = args[i];
+                    var arg = str.split("=");
+                    if(arg.length <= 1) continue;
+                    if(arg[0] == sArgName) {
+                        retval = arg[1];
+                    }
+                }
+                return retval;
+            }
+        })
+    </script>
+</head>
+<body>
+    <h2 align="center" class="total"></h2>
+    <ul >
+        <li><a class="gotoLoginSuccess" >返回主页</a></li>
+    </ul>
+</body>
+</html>

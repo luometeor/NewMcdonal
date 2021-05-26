@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>个人信息</title>
+    <link rel="stylesheet" type="text/css" href="../../static/css/style.css">
+    <script type="text/javascript" src=../../static/script/jquery-1.7.2.js ></script>
+    <script type="text/javascript">
+        $(function (){
+            //获取当前页面的url
+            urlinfo=window.location.href;
+            phoneNumber = GetArgsFromHref(urlinfo,"phoneNumber")
+
+            $.ajax({
+                url:"http://localhost:8080/NewMcDonald/ajax/pages/client/getUser",
+                type:"GET",
+                data:"phoneNumber="+phoneNumber,
+                success: function (data) {
+                    var cnt = 0;
+                    $.each(data,function (n,value){
+                        cnt++;
+                        let $tr = $("<tr></tr>");
+
+                        if(n == "user") {
+                            $(".personal_information").after($tr);
+                            $tr.append("<td>" + value.phoneNumber + "</td>")
+                                .append("<td>" + value.email + "</td>");
+                        } else  {
+
+                            for(var i = 0 ; i < value.length ; i++) {
+                                /*此标签在循环外外面不行！！！！*/
+                                let $tr = $('<tr></tr>');
+                                $(".main_table").append($tr)
+                                $tr.append("<td>" + value[i].information.username + "</td>")
+                                    .append("<td>" + value[i].information.sex + "</td>")
+                                    .append("<td>" + value[i].information.phoneNumber + "</td>")
+                                    .append("<td>" + value[i].destination.province+ "</td>")
+                                    .append("<td>" + value[i].destination.city+ "</td>")
+                                    .append("<td>" + value[i].destination.stress+ "</td>")
+                                    .append("<td>" + value[i].information.detailDestination + "</td>")
+                                    .append('<td><a href="personal_information_edit.html?id=' +value[i].information.id+ '&phoneNumber=' +phoneNumber+ '">修改</a></td>')
+                                    .append('&nbsp&nbsp<td><a id="deleteById" href="http://localhost:8080/NewMcDonald/ajax/pages/client/deleteInformation?id=' +
+                                        ''+value[i].information.id+'&phoneNumber='+phoneNumber+'">删除</a></td>')
+                                if(value[i].information.isDefault) {
+                                    $tr.append("<td>&nbsp&nbsp默认地址</td>")
+                                } else {
+                                    $tr.append('<a href="http://localhost:8080/NewMcDonald/ajax/pages/client/chooseToDefault?informationId=' +value[i].information.id+ '&userId=' +value[i].information.userId+ '">选择为默认地址</a>')
+                                }
+                            }
+
+                        }
+                    })
+                    if(cnt == 1) {
+                        let $tr = $("<tr></tr>");
+                        $(".information").after($tr);
+                        $tr.after("<td style='color: red'>还未配置订餐信息</td>")
+                    }
+                },
+                error: function () {
+                    alert("服务器发送错误，程序员小哥正在修改中")
+                },
+                dataType: "json"
+            })
+
+
+            /*给动态增加的标签绑定单击事件*/
+            $(".main_table").on("click","#deleteById",function (){
+                return confirm("你确定要删除?");
+            })
+
+            /*给标签赋值*/
+            $(".li_addInformation").attr('href',"personal_information_edit.html?phoneNumber="+phoneNumber)
+            $(".gotoLoginSuccess").attr('href',"http://localhost:8080/NewMcDonald/ajax/pages/user/gotoLoginSuccess?phoneNumber="+phoneNumber)
+
+
+
+            function GetArgsFromHref(sHref, sArgName) {
+                var args = sHref.split("?");
+                var retval = "";
+                /*参数为空*/
+                if(args[0] == sHref) {
+                    /*无需做任何处理*/
+                    return retval;
+                }
+                var str = args[1];
+                args = str.split("&");
+                for(var i = 0; i < args.length; i ++) {
+                    str = args[i];
+                    var arg = str.split("=");
+                    if(arg.length <= 1) continue;
+                    if(arg[0] == sArgName) {
+                        retval = arg[1];
+                    }
+                }
+                return retval;
+            }
+        })
+    </script>
+</head>
+<body>
+    <h2 >个人中心</h2>
+
+    <ul>
+        <li><a  class="li_addInformation" href="">添加订餐信息</a></li>
+        <li><a class="gotoLoginSuccess" href="">返回首页</a></li>
+    </ul>
+
+    <table class="main_table"   style="width: auto" border="1px" >
+        <tr>
+            <td>账户信息:</td>
+        </tr>
+        <tr class="personal_information">
+            <td>手机号码</td>
+            <td>邮箱</td>
+        </tr>
+        <tr >
+            <td>配送信息:</td>
+        </tr>
+        <tr class="information" >
+            <td>用户名</td>
+            <td>性别</td>
+            <td>电话号码</td>
+            <td>省</td>
+            <td>市</td>
+            <td>街/区</td>
+            <td>详细地址</td>
+            <td>操作</td>
+        </tr>
+        <tr class="addInformation">
+            <td class="username"></td>
+            <td class="sex"></td>
+            <td class="phoneNumber"></td>
+            <td class="province"></td>
+            <td class="city"></td>
+            <td class="stress"></td>
+            <td class="detailDestination"></td>
+            <td class="operation"></td>
+        </tr>
+    </table>
+
+
+</body>
+</html>

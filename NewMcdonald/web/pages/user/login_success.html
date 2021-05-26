@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+    <meta charset="UTF-8">
+    <title>主页</title>
+    <link rel="stylesheet" type="text/css" href="../../static/css/style.css">
+    <script type="text/javascript" src=../../static/script/jquery-1.7.2.js></script>
+    <script type="text/javascript">
+
+        $(function (){
+             //获取当前页面的url
+            let urlinfo=window.location.href;
+            let phoneNumber = GetArgsFromHref(urlinfo,"phoneNumber");
+            let roleId = GetArgsFromHref(urlinfo,"roleId");
+            let userId = GetArgsFromHref(urlinfo,"userId");
+
+            //用户个人信息中心
+            $(".user_information").attr('href','../client/personal_information.html?phoneNumber='+phoneNumber);
+            //进入店铺
+            $(".entry_store").attr('href','../item/entry_store.html?userId='+userId);
+            //查看订单
+            $(".entry_order").attr('href','../order/order.html?userId='+userId+"&type=all");
+            //我的购物车
+            $(".entry_cart").attr('href','../cart/entry_cart.html?userId='+userId);
+
+            /*是店长*/
+            if(roleId > 1) {
+                $(".login_success_ul").append('<li><a href="../manager/store.html?userId='+userId+'">管理我的店</a></li>')
+                                      .append("<li><a href='../order/entry_my_store.html?userId="+userId+"'>出单</a></li>")
+            }
+
+        })
+
+        function GetArgsFromHref(sHref, sArgName) {
+            var args = sHref.split("?");
+            var retval = "";
+            /*参数为空*/
+            if(args[0] == sHref) {
+                /*无需做任何处理*/
+                return retval;
+            }
+            var str = args[1];
+            args = str.split("&");
+            for(var i = 0; i < args.length; i ++) {
+                str = args[i];
+                var arg = str.split("=");
+                if(arg.length <= 1) continue;
+                if(arg[0] == sArgName) {
+                    retval = arg[1];
+                }
+            }
+            return retval;
+        }
+
+    </script>
+<body>
+    <div>
+      <h2 >欢迎来到MdDonald</h2>
+    </div>
+    <ul class="login_success_ul" >
+        <li><a href="" class="entry_store" >进入店铺</a></li>
+        <li><a href="" class="user_information">个人中心</a></li>
+        <li><a href="" class="entry_cart" >我的购物车</a></li>
+        <li><a href="" class="entry_order">查看订单</a></li>
+    </ul>
+
+
+</body>
+</html>

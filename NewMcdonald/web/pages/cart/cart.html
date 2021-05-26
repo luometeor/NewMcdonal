@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>我的购物车</title>
+    <link rel="stylesheet"  type="text/css"  href="../../static/css/style.css">
+    <script type="text/javascript" src=../../static/script/jquery-1.7.2.js></script>
+    <script type="text/javascript">
+        $(function (){
+            let urlInfo = window.location.href;
+            let userId = GetArgsFromHref(urlInfo,"userId");
+            let storeId = GetArgsFromHref(urlInfo,"storeId");
+
+            $.getJSON("http://localhost:8080/NewMcDonald/ajax/pages/cart/getCart?userId="+userId+"&storeId="+storeId,function (data) {
+                if(data.result) {
+                    for (let i = 0; i < data.cartItems.length; i++) {
+                        let $tr = $("<tr></tr>")
+                        $(".main_table").append($tr);
+
+                        $tr.append("<td class='itemName'>"+ data.cartItems[i].itemName+"</td>")
+                            .append("<td><input class='totalCount'  type='text' value='"+ data.cartItems[i].count+"' ><input type='hidden' value='"+i+"' class='hidden'></td>")
+                            .append("<td>"+ data.cartItems[i].price+"</td>")
+                            .append("<td>"+ data.cartItems[i].totalPrice+"</td>")
+                            .append("<td><a class='deleteItem' href='http://localhost:8080/NewMcDonald/ajax/pages/cart/delete?cartItemId="+data.cartItems[i].id+"'>删除</a></td>")
+                            .append("<td>"+data.storeName+"</td>");
+                        if(data.cartItems[i].size) {
+                            $tr.append("<td>"+ data.cartItems[i].size +"</td>")
+                        } else {
+                            $tr.append("<td>套餐</td>")
+                        }
+                        if(data.cartItems[i].cool) {
+                            $tr.append("<td>"+data.cartItems[i].cool+"</td>")
+                        } else if(data.cartItems[i].hot) {
+                            $tr.append("<td>"+data.cartItems[i].hot+"</td>")
+                        } else {
+                            $tr.append("<td>无</td>")
+                        }
+                    }
+                    /*删除商品*/
+                    $(".main_table").on("click",".deleteItem",function (){
+                        return confirm("你确定要删除");
+                    })
+                    /*修改商品数量*/
+                    $(".main_table").on("change",".totalCount",function (){
+                        if(this.value <=0 ) {
+                            alert("数量不能小于等于0")
+                            this.value = this.defaultValue;
+                            return false;
+                        }
+                        if(confirm("你确定要修改"+$(this).parent().parent().find(".itemName").html()+"的数量为"+this.value)) {
+                            location.href= "http://localhost:8080/NewMcDonald/ajax/pages/cart/updateCount?cartItemId="
+                                +data.cartItems[$(this).parent().parent().find(".hidden").val()].id+"&count="+this.value
+                                +"&cartId="+data.cart.id;
+                        } else {
+                            this.value = this.defaultValue;
+                        }
+                    })
+                    /*确定要删除购物车吗*/
+                    $(".clean").click(function (){
+                        return confirm("确定要清空购物车？")
+                    })
+
+                    /*功能赋值*/
+                    $(".totalCount").html("商品总数量为:"+data.cart.totalCount)
+                    $(".totalPrice").html("总价:"+data.cart.totalPrice)
+                    //结账
+                    $(".account").attr('href',"http://localhost:8080/NewMcDonald/ajax/pages/order/checkout?cartId="+data.cart.id+"&storeId="+storeId)
+                                 .html("去结账")
+                    //清空购物车
+                    $(".clean").html("清空购物车")
+                               .attr('href','http://localhost:8080/NewMcDonald/ajax/pages/cart/clean?userId='+userId+'&storeId='+storeId)
+
+
+                } else {
+                   $(".error").html("当前购物车为空，赶紧去购物把")
+                }
+
+
+
+
+            })
+            /*跳转标签赋值*/
+            //回到首页
+            $(".gotoLoginSuccess").attr('href',"http://localhost:8080/NewMcDonald/ajax/pages/user/gotoLoginSuccess?userId="+userId)
+            //去购物
+            $(".gotoStore").attr('href',"../item/entry_store.html?userId="+userId)
+            //进入其他购物车
+            $(".chooseOtherCart").attr('href','entry_cart.html?userId='+userId)
+            function GetArgsFromHref(sHref, sArgName) {
+                var args = sHref.split("?");
+                var retval = "";
+                /*参数为空*/
+                if(args[0] == sHref) {
+                    /*无需做任何处理*/
+                    return retval;
+                }
+                var str = args[1];
+                args = str.split("&");
+                for(var i = 0; i < args.length; i ++) {
+                    str = args[i];
+                    var arg = str.split("=");
+                    if(arg.length <= 1) continue;
+                    if(arg[0] == sArgName) {
+                        retval = arg[1];
+                    }
+                }
+                return retval;
+            }
+        })
+    </script>
+</head>
+<body>
+    <ul>
+        <li><a class="gotoStore" href="">去购物</a></li>
+        <li><a class="gotoLoginSuccess" href="">回到首页</a></li>
+    </ul>
+
+    <table  class="main_table"   style="width: auto" border="1px">
+        <tr class="head">
+            <td>名称</td>
+            <td>数量</td>
+            <td>单价</td>
+            <td>金额</td>
+            <td>操作</td>
+            <td>所属店</td>
+            <td>大小</td>
+            <td>详情</td>
+        </tr>
+        <tr class="error">
+
+        </tr>
+    </table>
+    <div align="center">
+        <span class="totalCount"></span>
+        <span class="totalPrice"></span>
+        <span  ><a href="" class="account"></a></span>
+        <span ><a href="" class="clean"></a></span>
+    </div>
+    <div class="cartCount"><a class="chooseOtherCart">我的其他购物车</a></div>
+</body>
+</html>

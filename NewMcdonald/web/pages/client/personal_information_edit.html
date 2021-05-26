@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>修改/增加个人信息</title>
+    <!--修改与删除同一个界面，要判断-->
+    <script type="text/javascript" src=../../static/script/jquery-1.7.2.js></script>
+    <script type="text/javascript">
+        $(function (){
+            //获取当前页面的url
+            let urlInfo=window.location.href;
+            let informationId = GetArgsFromHref(urlInfo,"id");
+            let phoneNumber =  GetArgsFromHref(urlInfo,"phoneNumber");
+
+
+            /*省市区联动*/
+            let cities = new Array();
+            cities["广东省"] = [ "梅州市", "广州市","深圳市"];
+            cities["湖南省"] = ["长沙市", "岳阳市", "常德市"];
+            cities["湖北省"] = ["武汉市", "黄石市", "孝感市"];
+
+            let stress = new Array();
+            stress["广州市"] = ['番禺区','越秀区','海珠区','天河区']
+            stress["深圳市"] = ['罗湖区','福田区','南山区','宝安区']
+            stress["梅州市"] = ['大埔县','丰顺县','五华县','平远县']
+            stress["武汉市"] = ['江岸区','江汉区','乔口区','汉阳区']
+            stress["黄石市"] = ['下陆区','铁山区','阳新县','大冶市']
+            stress["孝感市"] = ['孝南区','孝昌县','大悟县','云梦县']
+            stress["长沙市"] = ['芙蓉区','天心区','岳麓区','开福区']
+            stress["岳阳市"] = ['岳阳楼区','云溪区','君山区','岳阳县']
+            stress["常德市"] = ['武陵区','鼎城区','安乡县','汉寿县']
+            var $province = $("#province");
+            var $city = $("#city");
+            var $stress = $("#stress");
+
+            for(var key in cities) {
+                $province.append("<option value='"+ key +"'>"+key+"</option>")
+            }
+
+            $province.change(function (){
+                $city.empty();
+                var province = $province.val();
+                var city = cities[province];
+                $city.append("<option>---请选择---</option>")
+                for(var i = 0 ; i < city.length ; i++) {
+                    $city.append("<option value='"+city[i]+"'>"+city[i]+"</option>")
+                }
+                /*也要清空*/
+                $stress.empty()
+                            .append("<option>---请选择---</option>")
+            })
+
+            $city.change(function (){
+                $stress.empty();
+                var city = $city.val();
+                var newstress = stress[city];
+                for(var i = 0 ; i < newstress.length ; i++) {
+                    $stress.append("<option value='"+newstress[i]+"'>"+newstress[i]+"</option>")
+                }
+            })
+
+            $("#change_submit").click(function (){
+                var username = $(".td_username").val();
+                var sex = $("input[name='sex']:checked").val()
+                var newPhoneNumber = $(".phoneNumber").val();
+                var province = $province.val();
+                var city = $city.val();
+                var stress = $stress.val()
+                var detailDestination = $("#detail_destination").val();
+                if(newPhoneNumber.length !=11) {
+                    $(".phone_error").css("color","red").html("请输入正确的手机号码")
+                }
+                /*province没有选择时 为 ----请选择----，故长度为11*/
+                else if(username.length ==0   || sex.length==null ||detailDestination.length==0
+                ||province.length == 11 || city.length == 11 || stress.length == 11 ) {
+                    $(".phone_error").html("")
+                    $(".error_message").css("color","red").html("上述内容不能为空")
+                }
+                //参入id,为修改
+                else if(informationId) {
+                    $(".error_message").html("");
+                    $.ajax({
+                        url: "http://localhost:8080/NewMcDonald/ajax/pages/client/updateInformation",
+                        type: "GET",
+                        data: "information.sex=" + sex + "&information.username=" + username + "&information.phoneNumber=" + newPhoneNumber
+                            + "&information.detailDestination="+detailDestination + "&destination.province="+province + "&destination.city="+city
+                            + "&destination.stress=" + stress +"&phoneNumber=" + phoneNumber + "&information.id=" + informationId ,
+                        success: function (data) {
+                            if (data.result) {
+                                location.href = "personal_information.html?phoneNumber=" + phoneNumber;
+                            } else {
+                                alert("服务器出错，程序员小哥正在修复中...")
+                            }
+                        },
+                        dataType: "json"
+                    })
+                } else {
+                    $(".error_message").html("");
+                    $.ajax({
+                        url: "http://localhost:8080/NewMcDonald/ajax/pages/client/addInformation",
+                        type: "POST",
+                        /*参数多，注意别写错了*/
+                        data: "information.sex=" + sex + "&information.username=" + username + "&information.phoneNumber=" + newPhoneNumber
+                            + "&information.detailDestination="+detailDestination + "&destination.province="+province + "&destination.city="+city
+                            + "&destination.stress=" + stress +"&phoneNumber=" + phoneNumber,
+                        success: function (data) {
+                            if (data.result) {
+                                location.href = "personal_information.html?phoneNumber=" + phoneNumber;
+                            } else {
+                                alert("服务器出错，程序员小哥正在修复中...")
+                            }
+                        },
+                        dataType: "json"
+                    })
+                }
+
+            })
+
+
+
+            function GetArgsFromHref(sHref, sArgName) {
+                var args = sHref.split("?");
+                var retval = "";
+                /*参数为空*/
+                if(args[0] == sHref) {
+                    /*无需做任何处理*/
+                    return retval;
+                }
+                var str = args[1];
+                args = str.split("&");
+                for(var i = 0; i < args.length; i ++) {
+                    str = args[i];
+                    var arg = str.split("=");
+                    if(arg.length <= 1) continue;
+                    if(arg[0] == sArgName) {
+                        retval = arg[1];
+                    }
+                }
+                return retval;
+            }
+
+
+
+        })
+
+
+    </script>
+</head>
+<body>
+    <table style="align-content: center">
+        <tr>
+            <td>用户名</td>
+            <td>性别</td>
+            <td>手机号码</td>
+            <td>地址</td>
+        </tr>
+        <tr>
+            <td>
+                <input type="text" class="td_username">
+            </td>
+            <td>
+                <input type="radio" name="sex" class="sex" value="男"/>男
+                <input type="radio" name="sex" class="sex" checked="checked" value="女">女
+            </td>
+            <td>
+                <input type="text" class="phoneNumber">
+                <p class="phone_error"></p>
+            </td>
+            <td>
+                <select id="province">
+                    <option>----请选择----</option>
+                </select>省
+                <select id="city">
+                    <option>----请选择----</option>
+                </select>市
+                <select id="stress">
+                    <option>----请选择----</option>
+                </select>区/街
+                详细地址：<input type="text" name="detail_destination" id="detail_destination">
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <input id="change_submit" type="submit" value="提交" >
+            </td>
+            <td>
+                <p class="error_message"></p>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

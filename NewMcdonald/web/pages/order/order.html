@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>用户查看订单</title>
+    <link rel="stylesheet" type="text/css" href="../../static/css/style.css">
+    <script type="text/javascript" src=../../static/script/jquery-1.7.2.js></script>
+    <script type="text/javascript">
+        $(function (){
+            let urlInfo = window.location.href;
+            let userId = GetArgsFromHref(urlInfo,"userId");
+            let type = GetArgsFromHref(urlInfo,"type");
+
+            $.getJSON("http://localhost:8080/NewMcDonald/ajax/pages/order/entry_order?userId="+userId+"&type="+type,function (data){
+                if(data.result) {
+                    for (let i = 0; i < data.orders.length; i++) {
+                        let $tr = $("<tr></tr>")
+                        $(".main_table").append($tr)
+                        $tr.append("<td>"+data.orders[i].createTime+"</td>")
+                           .append("<td>"+data.orders[i].price+"</td>")
+                        if(data.orders[i].status == 0) {
+                            $tr.append("<td>未发货</td>")
+                        } else {
+                            $tr.append("<td>已发货</td>")
+                        }
+                        $tr.append("<td><button class='search_detail' value='"+data.orders[i].orderId+"'>详情</button></td>")
+                    }
+                } else {
+                    $(".error").css("color","red").html("您暂时没有订单");
+                }
+
+                $(".main_table").on("click",".search_detail",function (){
+                    $(".detail_table").empty()
+                    var orderId = $(this).val();
+                    let $tr =
+                        $("    <tr class=\"head\">\n" +
+                            "            <td>名称</td>\n" +
+                            "            <td>数量</td>\n" +
+                            "            <td>单价</td>\n" +
+                            "            <td>金额</td>\n" +
+                            "            <td>所属店</td>\n" +
+                            "            <td>大小</td>\n" +
+                            "            <td>详情</td>\n" +
+                            "        </tr>");
+
+                    $(".detail_table").append($tr);
+                    for (let i = 0; i < data.orderItems.length; i++) {
+                        if(orderId == data.orderItems[i].orderId) {
+
+                            let $str = $("<tr></tr>")
+                            $tr.after($str)
+                            $str.append("<td>"+data.orderItems[i].itemName+"</td>")
+                                .append("<td>"+data.orderItems[i].count+"</td>")
+                                 .append("<td>"+data.orderItems[i].price+"</td>")
+                                 .append("<td>"+data.orderItems[i].totalPrice+"</td>")
+                                 .append("<td>"+data.orderItems[i].storeName+"</td>")
+
+                             if(data.orderItems[i].size) {
+                                 $str.append("<td>"+data.orderItems[i].size+"</td>")
+                             } else {
+                                 $str.append("<td>套餐</td>")
+                             }
+                            if(data.orderItems[i].cool) {
+                                $str.append("<td>"+data.orderItems[i].cool+"</td>")
+                            } else if(data.orderItems[i].hot) {
+                                $str.append("<td>"+data.orderItems[i].hot+"</td>")
+                            } else {
+                                $str.append("<td>无</td>")
+                            }
+                        }
+                    }
+
+                })
+            })
+
+            $(".this_day").attr('href',"order.html?userId="+userId+"&type=this_day")
+            $(".this_week").attr('href',"order.html?userId="+userId+"&type=this_week")
+            $(".this_month").attr('href',"order.html?userId="+userId+"&type=this_month")
+            $(".this_year").attr('href',"order.html?userId="+userId+"&type=this_year")
+            $(".last_year").attr('href',"order.html?userId="+userId+"&type=last_year")
+
+            $(".gotoLoginSuccess").attr('href',"http://localhost:8080/NewMcDonald/ajax/pages/user/gotoLoginSuccess?userId="+userId)
+
+            function GetArgsFromHref(sHref, sArgName) {
+                var args = sHref.split("?");
+                var retval = "";
+                /*参数为空*/
+                if(args[0] == sHref) {
+                    /*无需做任何处理*/
+                    return retval;
+                }
+                var str = args[1];
+                args = str.split("&");
+                for(var i = 0; i < args.length; i ++) {
+                    str = args[i];
+                    var arg = str.split("=");
+                    if(arg.length <= 1) continue;
+                    if(arg[0] == sArgName) {
+                        retval = arg[1];
+                    }
+                }
+                return retval;
+            }
+        })
+
+    </script>
+</head>
+<body>
+    <ul>
+        <li><a class="gotoLoginSuccess">返回主页</a></li>
+    </ul>
+    <div class="error">
+
+    </div>
+    <div>
+        <span>按条件搜索</span>
+        <span><a type="submit"  class="this_day" >当天</a></span>
+        <span><a type="submit"  class="this_week" >本周</a></span>
+        <span><a type="submit"  class="this_month">本月</a></span>
+        <span><a type="submit"  class="this_year">本年</a></span>
+        <span><a type="submit"  class="last_year">上年</a></span>
+    </div>
+
+    <table class="main_table">
+        <tr>
+            <td>日期</td>
+            <td>金额</td>
+            <td>状态</td>
+            <td>详情</td>
+        </tr>
+    </table>
+
+    <table class="detail_table" style="width: auto" border="1px" align="center">
+
+    </table>
+</body>
+</html>

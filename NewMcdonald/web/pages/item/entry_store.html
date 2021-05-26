@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>选择进入店</title>
+    <script type="text/javascript" src=../../static/script/jquery-1.7.2.js></script>
+    <script type="text/javascript">
+        $(function (){
+            //获取当前页面的url
+            let urlinfo=window.location.href;
+            //获取url的长度
+            let len=urlinfo.length;
+            //设置参数值开始的位置，这个只适用与传一个参数
+            let offset=urlinfo.indexOf("=");
+            //取出参数值
+            let userId=urlinfo.substr(offset+1,len);
+
+            $.getJSON("http://localhost:8080/NewMcDonald/ajax/pages/item/getStore?userId="+userId,function (data){
+                if(data.result) {
+                    $.each(data,function (n,value){
+                        for (let i = 0; i < value.length; i++) {
+                            let $str = $("<tr></tr>");
+                            $(".main_table").append($str)
+                            $str.append("<td>"+value[i].storeName+"</td>>")
+                                .append("<td>"+value[i].description+"</td>")
+                                .append("<td>" +value[i].city +"</td>")
+                                .append('<td><a href="items.html?storeId='+value[i].id+'&userId='+userId+'&pageNo=1">进入</td>')
+                        }
+                    })
+                } else {
+                    let $tr = $("<tr></tr>");
+                    $(".main_table").append($tr)
+                    $tr.append("<div style='color: red' align='center'>"+data.message+"</div >")
+                }
+            })
+            $(".gotoLoginSuccess").attr('href','http://localhost:8080/NewMcDonald/ajax/pages/user/gotoLoginSuccess?userId='+userId)
+        })
+
+    </script>
+</head>
+<body>
+    <table style="width: auto" border="1px" class="main_table" align="center">
+        <tr>
+            <td><a href="" class="gotoLoginSuccess">返回主页</a></td>
+        </tr>
+        <tr>
+            <td>名称</td>
+            <td>城市</td>
+            <td>描述</td>
+            <td>操作</td>
+        </tr>
+    </table>
+
+</body>
+</html>
